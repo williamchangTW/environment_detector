@@ -8,9 +8,11 @@ class system_detect:
 	# monitor resources: battery, memory, cpu
 	# case 0: default setting
 	# case 1: graceful killer start and save ckpt
-	def __init__(self, 
+	def __init__(self,
+				 pid = None, 
 				 limit_mem = 70,
 				 limit_cpu = 90):
+		self.pid = pid
 		self.limit_mem = limit_mem
 		self.limit_cpu = limit_cpu
 
@@ -32,13 +34,13 @@ class system_detect:
 		# with battery
 		if battery_status != False and battery_status <= 40 and power_plug != True:
 			if self.limit_mem >= int(85 - usage_mem) or self.limit_cpu >= int(100 - cpu_average):
-				GracefulKiller()
+				GracefulKiller(pid = self.pid)
 				if self.limit_mem >= int(100 - usage_mem) or self.limit_cpu >= int(100 - cpu_average):
 					return True
 		# without battery
 		elif power_plug != False:
 			if self.limit_mem >= int(85 - usage_mem) or self.limit_cpu >= int(100 - cpu_average):
-				GracefulKiller()
+				GracefulKiller(pid = self.pid)
 				if self.limit_mem >= int(100 - usage_mem) or self.limit_cpu >= int(100 - cpu_average):
 					return True
 		else:
