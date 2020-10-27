@@ -1,7 +1,6 @@
 # build file paths if necessary
 import os, sys, subprocess
 # install every necessary packet
-# TODO
 # Data File that include every necessary
 def path_check():
     if os.path.exists("data") == False:
@@ -38,27 +37,30 @@ class environment_check:
         self.package = package
         self.version = version
     def packages(self):
-        return dict(package.split('==') for package in subprocess.check_output([sys.executable, '-m', 'pip', 'freeze']).decode().split())
+        lib_dic = dict(package.split('==') for package in subprocess.check_output([sys.executable, '-m', 'pip', 'freeze']).decode().split())
+        if self.package not in lib_dic.keys():
+            environment_check(self.package, self.version).install()
+        elif lib_dic[self.package] > str(self.version):
+            environment_check(self.package, self.version).downgrade()
+        elif lib_dic[self.package] < str(self.version):
+            environment_check(self.package, self.version).upgrade()
+
     def install(self): 
         subprocess.call([sys.executable, '-m', 'pip', 'install', self.package])
     def upgrade(self): 
-        subprocess.call([sys.executable, '-m', 'pip', 'install', self.package, '==', self.version, '—force-reinstall'])
+        subprocess.call([sys.executable, '-m', 'pip', 'install', self.package + "==" + self.version])
     def downgrade(self): 
-        subprocess.call([sys.executable, '-m', 'pip', 'install', self.package, '==', self.version, '—force-reinstall'])
+        subprocess.call([sys.executable, '-m', 'pip', 'install', self.package + '==' + self.version])
 
 
 
 if __name__ == "__main__":
     # lib check 
+
     lib = ("numpy", "psutil", "tensorflow", "Keras", "h5py")
     ver = ["1.17.0", "5.6.3", "1.14.0", "2.3.0", "2.9.0"]
     for i in range(0, 4):
-        if lib[i] not in environment_check(package = lib[i], version = ver[i]).packages().keys:
-            environment_check(package= lib[i], version = ver[i]).install()
-        elif environment_check(package= lib[i], version = ver[i]).packages() < ver[i]:
-            environment_check(package= lib[i], version = ver[i]).upgrade()
-        elif environment_check(package= lib[i], version = ver[i]).packages() > ver[i]:
-            environment_check(package= lib[i], version = ver[i]).downgrade()
+        environment_check(lib[i], ver[i]).packages()
     # path check
     path_check()
         
